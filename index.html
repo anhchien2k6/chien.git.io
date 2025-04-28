@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swipe Page Reader</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+    .book-container {
+      width: 90%;
+      max-width: 600px;
+      height: 80vh;
+      background: #fff;
+      border: 3px solid #ff99cc; /* Viền hồng phấn */
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      position: relative;
+      cursor: grab;
+    }
+    .page {
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+      font-size: 18px;
+      line-height: 1.6;
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: transform 0.3s ease;
+    }
+    .page.active {
+      display: block;
+      transform: translateX(0);
+    }
+    .page.next {
+      transform: translateX(100%);
+    }
+    .page.prev {
+      transform: translateX(-100%);
+    }
+  </style>
+</head>
+<body>
+  <div class="book-container" id="book">
+    <div class="page active" id="page1">
+      <h2><--</h2>
+      <p> Chào em, em học trường nào nhỉ😄</p>
+    </div>
+    <div class="page" id="page2">
+      <h2><--</h2>
+      <p>Buổi đi chơi hôm đó vui lắm ạ!</p>
+    </div>
+    <div class="page" id="page3">
+      <h2>...</h2>
+      <p>Thật sự thì, anh cảm thấy rất có lỗi với em. Anh không phải kiểu người có thể chiều chuộng người mình yêu, vì bản thân anh còn quá nhiều điều chưa hoàn thiện. Anh nghĩ, mình cần thêm thời gian cho bản thân. Đối với anh, hiện tại, anh vẫn chưa sẵn sàng để bắt đầu một mối quan hệ. Anh cũng không muốn cô gái bên cạnh mình phải gồng lên để thấu hiểu hay phải cố gắng thông cảm cho anh , nếu vậy,  anh sẽ cảm thấy rất, xấu hổ và tự trách. 
+        Chúng ta gặp nhau là một cái duyên, một cuộc gặp gỡ mà cả hai đều không thể nghĩ trước được. Anh cũng không biết mối quan hệ này sẽ đi tới đâu, nhưng anh không muốn nó trở thành một cuộc giằng co cảm xúc: một bên thì suy nghĩ quá nhiều, một bên thì thờ ơ. Nếu như vậy, những cuộc trò chuyện của chúng ta chẳng khác gì cuộc đấu trí cả, và anh không muốn nó xảy ra.
+        Anh chỉ là một sinh viên, chưa đi làm, chưa có gì trong tay. Anh chưa thể lo cho ai được cả. Anh không muốn sau này phải đưa ra những lý do như 'tập trung cho sự nghiệp' để rời đi, bởi với anh, ngu lắm mới làm vậy.
+        Thấy em vô tư, hồn nhiên đi chơi và nói chuyện, anh cảm thấy vui lắm. Còn về chiếc cốc hôm nay, không biết em đã mua nó chưa, nhưng nếu mua rồi, anh hy vọng em sẽ tặng nó cho một người xứng đáng hơn.
+        Dù sao đi nữa, anh cũng muốn cảm ơn em, cảm ơn em vì đã dành thời gian đi chơi với anh!</p>
+    </div>
+  </div>
+
+  <script>
+    const book = document.getElementById('book');
+    const pages = document.querySelectorAll('.page');
+    let currentPage = 0;
+    let startX = 0;
+    let isInteracting = false;
+
+    function showPage(index) {
+      pages.forEach((page, i) => {
+        page.classList.remove('active', 'next', 'prev');
+        if (i === index) {
+          page.classList.add('active');
+        } else if (i > index) {
+          page.classList.add('next');
+        } else {
+          page.classList.add('prev');
+        }
+      });
+    }
+
+    // Vuốt trên điện thoại
+    book.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      isInteracting = true;
+    });
+
+    book.addEventListener('touchmove', (e) => {
+      if (!isInteracting) return;
+      const currentX = e.touches[0].clientX;
+      const diffX = startX - currentX;
+
+      if (diffX < -50 && currentPage < pages.length - 1) { // Vuốt phải
+        currentPage++;
+        showPage(currentPage);
+        isInteracting = false;
+      } else if (diffX > 50 && currentPage > 0) { // Vuốt trái
+        currentPage--;
+        showPage(currentPage);
+        isInteracting = false;
+      }
+    });
+
+    book.addEventListener('touchend', () => {
+      isInteracting = false;
+    });
+
+    // Kéo trên PC
+    book.addEventListener('mousedown', (e) => {
+      startX = e.clientX;
+      isInteracting = true;
+      book.style.cursor = 'grabbing';
+    });
+
+    book.addEventListener('mousemove', (e) => {
+      if (!isInteracting) return;
+      const currentX = e.clientX;
+      const diffX = startX - currentX;
+
+      if (diffX < -50 && currentPage < pages.length - 1) { // Kéo phải
+        currentPage++;
+        showPage(currentPage);
+        isInteracting = false;
+      } else if (diffX > 50 && currentPage > 0) { // Kéo trái
+        currentPage--;
+        showPage(currentPage);
+        isInteracting = false;
+      }
+    });
+
+    book.addEventListener('mouseup', () => {
+      isInteracting = false;
+      book.style.cursor = 'grab';
+    });
+
+    book.addEventListener('mouseleave', () => {
+      isInteracting = false;
+      book.style.cursor = 'grab';
+    });
+
+    showPage(currentPage);
+  </script>
+</body>
+</html>
