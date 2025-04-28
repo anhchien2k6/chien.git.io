@@ -24,7 +24,7 @@
       border: 3px solid #ff99cc; /* Viền hồng phấn */
       border-radius: 15px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
+      overflow: hidden; /* Chỉ vuốt ngang */
       position: relative;
       cursor: grab;
     }
@@ -39,6 +39,7 @@
       position: absolute;
       top: 0;
       left: 0;
+      overflow-y: auto; /* Cho phép cuộn dọc */
       transition: transform 0.3s ease;
     }
     .page.active {
@@ -50,6 +51,17 @@
     }
     .page.prev {
       transform: translateX(-100%);
+    }
+    /* Thanh cuộn đẹp hơn */
+    .page::-webkit-scrollbar {
+      width: 8px;
+    }
+    .page::-webkit-scrollbar-thumb {
+      background: #ff99cc;
+      border-radius: 4px;
+    }
+    .page::-webkit-scrollbar-track {
+      background: #f0f2f5;
     }
   </style>
 </head>
@@ -78,6 +90,7 @@
     const pages = document.querySelectorAll('.page');
     let currentPage = 0;
     let startX = 0;
+    let startY = 0;
     let isInteracting = false;
 
     function showPage(index) {
@@ -96,22 +109,28 @@
     // Vuốt trên điện thoại
     book.addEventListener('touchstart', (e) => {
       startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
       isInteracting = true;
     });
 
     book.addEventListener('touchmove', (e) => {
       if (!isInteracting) return;
       const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
       const diffX = startX - currentX;
+      const diffY = Math.abs(startY - currentY);
 
-      if (diffX < -50 && currentPage < pages.length - 1) { // Vuốt phải
-        currentPage++;
-        showPage(currentPage);
-        isInteracting = false;
-      } else if (diffX > 50 && currentPage > 0) { // Vuốt trái
-        currentPage--;
-        showPage(currentPage);
-        isInteracting = false;
+      // Chỉ chuyển trang nếu vuốt ngang nhiều hơn dọc
+      if (diffY < Math.abs(diffX) && Math.abs(diffX) > 50) {
+        if (diffX < -50 && currentPage < pages.length - 1) { // Vuốt phải
+          currentPage++;
+          showPage(currentPage);
+          isInteracting = false;
+        } else if (diffX > 50 && currentPage > 0) { // Vuốt trái
+          currentPage--;
+          showPage(currentPage);
+          isInteracting = false;
+        }
       }
     });
 
@@ -122,6 +141,7 @@
     // Kéo trên PC
     book.addEventListener('mousedown', (e) => {
       startX = e.clientX;
+      startY = e.clientY;
       isInteracting = true;
       book.style.cursor = 'grabbing';
     });
@@ -129,16 +149,20 @@
     book.addEventListener('mousemove', (e) => {
       if (!isInteracting) return;
       const currentX = e.clientX;
+      const currentY = e.clientY;
       const diffX = startX - currentX;
+      const diffY = Math.abs(startY - currentY);
 
-      if (diffX < -50 && currentPage < pages.length - 1) { // Kéo phải
-        currentPage++;
-        showPage(currentPage);
-        isInteracting = false;
-      } else if (diffX > 50 && currentPage > 0) { // Kéo trái
-        currentPage--;
-        showPage(currentPage);
-        isInteracting = false;
+      if (diffY < Math.abs(diffX) && Math.abs(diffX) > 50) {
+        if (diffX < -50 && currentPage < pages.length - 1) { // Kéo phải
+          currentPage++;
+          showPage(currentPage);
+          isInteracting = false;
+        } else if (diffX > 50 && currentPage > 0) { // Kéo trái
+          currentPage--;
+          showPage(currentPage);
+          isInteracting = false;
+        }
       }
     });
 
